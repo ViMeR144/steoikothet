@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Панель преподавателя - Stepik Bot{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="mb-0">
+                    <i class="fas fa-chalkboard-teacher me-2"></i>
+                    Панель преподавателя
+                </h1>
+                <p class="mb-0 mt-2">Добро пожаловать, {{ user_data.get('username', 'Преподаватель') }}!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Статистика -->
+<div class="row mt-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card text-center">
+            <div class="card-body">
+                <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                <h3 class="stats-number">{{ stats.get('total_students', 0) or 0 }}</h3>
+                <p class="mb-0">Студентов</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card text-center">
+            <div class="card-body">
+                <i class="fas fa-file-alt fa-2x text-info mb-2"></i>
+                <h3 class="stats-number">{{ stats.get('total_tests', 0) or 0 }}</h3>
+                <p class="mb-0">Всего тестов</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card text-center">
+            <div class="card-body">
+                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                <h3 class="stats-number">{{ stats.get('reviewed_tests', 0) or 0 }}</h3>
+                <p class="mb-0">Проверено</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card text-center">
+            <div class="card-body">
+                <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                <h3 class="stats-number">{{ stats.get('pending_tests', 0) or 0 }}</h3>
+                <p class="mb-0">На проверке</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Быстрые действия -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Быстрые действия
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <a href="{{ url_for('pending_tests') }}" class="btn btn-primary btn-lg me-md-2">
+                                <i class="fas fa-list me-2"></i>
+                                Просмотр тестов
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <a href="{{ url_for('students_list') }}" class="btn btn-outline-primary btn-lg me-md-2">
+                                <i class="fas fa-users me-2"></i>
+                                Список студентов
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <a href="{{ url_for('students_list') }}" class="btn btn-outline-info btn-lg">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Статистика
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Неоцененные тесты -->
+{% if pending_tests %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>
+                    Неоцененные тесты
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>ФИО</th>
+                                <th>Степик ID</th>
+                                <th>Тип</th>
+                                <th>Дата</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for test in pending_tests %}
+                            <tr>
+                                <td><strong>#{{ test.id }}</strong></td>
+                                <td>{{ test.full_name }}</td>
+                                <td><code>{{ test.stepik_id }}</code></td>
+                                <td>
+                                    <span class="badge bg-{{ 'primary' if test.test_type == '5' else 'info' }}">
+                                        {{ test.test_type }} баллов
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ test.submitted_at.split(' ')[0] if test.submitted_at else '—' }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ test.test_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                        <a href="{{ url_for('evaluate_test', test_id=test.id) }}" class="btn btn-success btn-sm">
+                                            <i class="fas fa-check me-1"></i>Оценить
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if pending_tests|length >= 5 %}
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('pending_tests') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-2"></i>
+                        Показать все тесты
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Топ студентов -->
+{% if students_scores %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-trophy me-2"></i>
+                    Топ студентов
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>ФИО</th>
+                                <th>Баллы</th>
+                                <th>Тесты</th>
+                                <th>Проверено</th>
+                                <th>Процент</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students_scores %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td><strong>{{ student.full_name }}</strong></td>
+                                <td>
+                                    <span class="badge bg-success fs-6">{{ student.total_score }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ student.total_tests }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ student.reviewed_tests }}</span>
+                                </td>
+                                <td>
+                                    {% if student.total_tests > 0 %}
+                                        {% set percentage = (student.reviewed_tests / student.total_tests * 100)|round(1) %}
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ percentage }}%">
+                                                {{ percentage }}%
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">0%</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if students_scores|length >= 10 %}
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('students_list') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-2"></i>
+                        Показать всех студентов
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Информация -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Информация
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-chart-line me-2 text-primary"></i>Статистика:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Всего студентов: {{ stats.get('total_students', 0) }}</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Всего тестов: {{ stats.get('total_tests', 0) }}</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Проверено: {{ stats.get('reviewed_tests', 0) }}</li>
+                            <li><i class="fas fa-check text-success me-2"></i>На проверке: {{ stats.get('pending_tests', 0) }}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-tools me-2 text-info"></i>Доступные действия:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Просмотр тестов</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Оценка работ</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Статистика студентов</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Управление классом</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

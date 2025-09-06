@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Панель студента - Stepik Bot{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="mb-0">
+                    <i class="fas fa-user-graduate me-2"></i>
+                    Панель студента
+                </h1>
+                <p class="mb-0 mt-2">Добро пожаловать, {{ user_data.get('username', 'Студент') }}!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Статистика -->
+<div class="row mt-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card text-center">
+            <div class="card-body">
+                <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                <h3 class="stats-number">{{ total_score }}</h3>
+                <p class="mb-0">Всего баллов</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card text-center">
+            <div class="card-body">
+                <i class="fas fa-file-alt fa-2x text-primary mb-2"></i>
+                <h3 class="stats-number">{{ total_tests }}</h3>
+                <p class="mb-0">Отправлено тестов</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card text-center">
+            <div class="card-body">
+                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                <h3 class="stats-number">{{ reviewed_tests }}</h3>
+                <p class="mb-0">Проверено</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card text-center">
+            <div class="card-body">
+                <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                <h3 class="stats-number">{{ total_tests - reviewed_tests }}</h3>
+                <p class="mb-0">На проверке</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Быстрые действия -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Быстрые действия
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <a href="{{ url_for('submit_test') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus me-2"></i>
+                                Отправить тест
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <a href="{{ url_for('my_results') }}" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Мои результаты
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <button class="btn btn-outline-info btn-lg" onclick="showHelp()">
+                                <i class="fas fa-question-circle me-2"></i>
+                                Помощь
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Последние тесты -->
+{% if tests %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Последние тесты
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>ФИО</th>
+                                <th>Степик ID</th>
+                                <th>Тип</th>
+                                <th>Статус</th>
+                                <th>Баллы</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for test in tests %}
+                            <tr>
+                                <td><strong>#{{ test.id }}</strong></td>
+                                <td>{{ test.full_name }}</td>
+                                <td><code>{{ test.stepik_id }}</code></td>
+                                <td>
+                                    <span class="badge bg-{{ 'primary' if test.test_type == '5' else 'info' }}">
+                                        {{ test.test_type }} баллов
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if test.is_reviewed %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Проверено
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock me-1"></i>На проверке
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if test.is_reviewed %}
+                                        <span class="badge bg-success fs-6">{{ test.score }}</span>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ test.submitted_at.split(' ')[0] if test.submitted_at else '—' }}
+                                    </small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if tests|length >= 5 %}
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('my_results') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-2"></i>
+                        Показать все тесты
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Инструкция по отправке тестов -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Как отправить тест
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-list-ol me-2 text-primary"></i>Шаги:</h5>
+                        <ol>
+                            <li>Нажмите кнопку "Отправить тест"</li>
+                            <li>Заполните все поля формы</li>
+                            <li>Укажите правильную ссылку на тест</li>
+                            <li>Выберите тип теста (3 или 5 баллов)</li>
+                            <li>Отправьте форму</li>
+                        </ol>
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-exclamation-triangle me-2 text-warning"></i>Важно:</h5>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Проверьте правильность данных</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Используйте актуальную ссылку</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Указывайте реальное ФИО</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Выбирайте правильный тип теста</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showHelp() {
+    alert('Помощь:\n\n1. Для отправки теста нажмите "Отправить тест"\n2. Заполните все поля формы\n3. Проверьте правильность данных\n4. Отправьте форму\n\nДля просмотра результатов нажмите "Мои результаты"');
+}
+</script>
+{% endblock %}

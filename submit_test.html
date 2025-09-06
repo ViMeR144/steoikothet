@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Отправить тест - Stepik Bot{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="mb-0">
+                    <i class="fas fa-plus me-2"></i>
+                    Отправить тест
+                </h1>
+                <p class="mb-0 mt-2">Заполните форму для отправки выполненного теста</p>
+            </div>
+            <div class="card-body p-5">
+                <form method="POST" id="testForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="full_name" class="form-label">
+                                <i class="fas fa-user me-2"></i>ФИО <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" 
+                                   placeholder="Иванов Иван Иванович" required>
+                            <div class="form-text">Введите ваше полное ФИО</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="stepik_id" class="form-label">
+                                <i class="fas fa-id-card me-2"></i>ID Степика <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="stepik_id" name="stepik_id" 
+                                   placeholder="123456789" required>
+                            <div class="form-text">Ваш ID на платформе Степик</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="test_url" class="form-label">
+                            <i class="fas fa-link me-2"></i>Ссылка на тест <span class="text-danger">*</span>
+                        </label>
+                        <input type="url" class="form-control" id="test_url" name="test_url" 
+                               placeholder="https://stepik.org/lesson/123456/step/1" required>
+                        <div class="form-text">Скопируйте ссылку на пройденный тест</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="test_type" class="form-label">
+                            <i class="fas fa-star me-2"></i>Тип теста <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-control" id="test_type" name="test_type" required>
+                            <option value="">Выберите тип теста</option>
+                            <option value="3">3 балла</option>
+                            <option value="5">5 баллов</option>
+                        </select>
+                        <div class="form-text">Выберите максимальный балл за тест</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <button type="submit" class="btn btn-primary btn-lg me-md-2">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            Отправить тест
+                        </button>
+                        <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Инструкция -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Инструкция по заполнению
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-list-ol me-2 text-primary"></i>Как заполнить:</h5>
+                        <ol>
+                            <li><strong>ФИО:</strong> Укажите ваше полное имя</li>
+                            <li><strong>ID Степика:</strong> Найдите в профиле на stepik.org</li>
+                            <li><strong>Ссылка:</strong> Скопируйте URL пройденного теста</li>
+                            <li><strong>Тип теста:</strong> Выберите 3 или 5 баллов</li>
+                        </ol>
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-exclamation-triangle me-2 text-warning"></i>Важные моменты:</h5>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Все поля обязательны</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Проверьте правильность ссылки</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Указывайте реальные данные</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Выберите правильный тип теста</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Примеры -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Примеры заполнения
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user me-2 text-info"></i>ФИО:</h6>
+                        <ul class="list-unstyled">
+                            <li><code>Петров Петр Петрович</code></li>
+                            <li><code>Иванова Анна Сергеевна</code></li>
+                            <li><code>Сидоров Алексей Владимирович</code></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-link me-2 text-info"></i>Ссылка на тест:</h6>
+                        <ul class="list-unstyled">
+                            <li><code>https://stepik.org/lesson/123456/step/1</code></li>
+                            <li><code>https://stepik.org/lesson/789012/step/5</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('testForm');
+    const fullNameInput = document.getElementById('full_name');
+    const stepikIdInput = document.getElementById('stepik_id');
+    const testUrlInput = document.getElementById('test_url');
+    const testTypeSelect = document.getElementById('test_type');
+    
+    // Валидация формы
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        let errors = [];
+        
+        // Проверка ФИО
+        if (!fullNameInput.value.trim() || fullNameInput.value.trim().split(' ').length < 2) {
+            errors.push('ФИО должно содержать минимум имя и фамилию');
+            isValid = false;
+        }
+        
+        // Проверка ID Степика
+        if (!stepikIdInput.value.trim() || isNaN(stepikIdInput.value.trim())) {
+            errors.push('ID Степика должен быть числом');
+            isValid = false;
+        }
+        
+        // Проверка ссылки
+        if (!testUrlInput.value.trim() || !testUrlInput.value.includes('stepik.org')) {
+            errors.push('Ссылка должна быть с сайта stepik.org');
+            isValid = false;
+        }
+        
+        // Проверка типа теста
+        if (!testTypeSelect.value) {
+            errors.push('Выберите тип теста');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Ошибки в форме:\n\n' + errors.join('\n'));
+        }
+    });
+    
+    // Автозаполнение ФИО из сессии (если есть)
+    {% if session.full_name %}
+    fullNameInput.value = '{{ session.full_name }}';
+    {% endif %}
+});
+</script>
+{% endblock %}
