@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Оценка теста #{{ test.id }} - Панель преподавателя{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-check-circle me-2"></i>
+            Оценка теста #{{ test.id }}
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Информация о тесте</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Студент:</strong> {{ test.full_name }}</p>
+                        <p><strong>Степик ID:</strong> <code>{{ test.stepik_id }}</code></p>
+                        <p><strong>Тип теста:</strong> {{ test.test_type }} баллов</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Дата отправки:</strong> {{ test.submitted_at }}</p>
+                        <p><strong>Ссылка на тест:</strong></p>
+                        <a href="{{ test.test_url }}" target="_blank" class="btn btn-outline-primary">
+                            <i class="fas fa-external-link-alt me-1"></i>Открыть тест
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Оценка</h5>
+            </div>
+            <div class="card-body">
+                <form id="evaluationForm">
+                    <input type="hidden" id="test_id" value="{{ test.id }}">
+                    
+                    <div class="mb-3">
+                        <label for="score" class="form-label">Баллы (0 - {{ test.test_type }}):</label>
+                        <input type="number" class="form-control" id="score" 
+                               min="0" max="{{ test.test_type }}" value="0" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Комментарий:</label>
+                        <textarea class="form-control" id="comment" rows="3" 
+                                  placeholder="Оценено преподавателем">Оценено преподавателем</textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check me-1"></i>Засчитать
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="setScore(0)">
+                            <i class="fas fa-times me-1"></i>Не засчитать
+                        </button>
+                        <a href="/pending_tests" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Назад
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="result" class="mt-3" style="display: none;"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function setScore(score) {
+    document.getElementById('score').value = score;
+    if (score === 0) {
+        document.getElementById('comment').value = 'Не засчитан';
+    } else {
+        document.getElementById('comment').value = 'Оценено преподавателем';
+    }
+}
+
+document.getElementById('evaluationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const testId = document.getElementById('test_id').value;
+    const score = document.getElementById('score').value;
+    const comment = document.getElementById('comment').value;
+    
+    const formData = new FormData();
+    formData.append('test_id', testId);
+    formData.append('score', score);
+    formData.append('comment', comment);
+    
+    fetch('/submit_evaluation', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        const resultDiv = document.getElementById('result');
+        if (data.success) {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    ${data.message}
+                </div>
+            `;
+            setTimeout(() => {
+                window.location.href = '/pending_tests';
+            }, 2000);
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    ${data.message}
+                </div>
+            `;
+        }
+        resultDiv.style.display = 'block';
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('result').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                Произошла ошибка при отправке оценки
+            </div>
+        `;
+        document.getElementById('result').style.display = 'block';
+    });
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Оценка теста - Stepik Bot{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="mb-0">
+                    <i class="fas fa-check me-2"></i>
+                    Оценка теста #{{ test.id }}
+                </h1>
+                <p class="mb-0 mt-2">Оцените работу студента</p>
+            </div>
+            <div class="card-body p-5">
+                <!-- Информация о тесте -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user me-2 text-primary"></i>Студент:</h6>
+                        <p><strong>{{ test.full_name }}</strong></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-id-card me-2 text-info"></i>Степик ID:</h6>
+                        <p><code>{{ test.stepik_id }}</code></p>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-star me-2 text-warning"></i>Тип теста:</h6>
+                        <p>
+                            <span class="badge bg-{{ 'primary' if test.test_type == '5' else 'info' }}">
+                                {{ test.test_type }} баллов
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-calendar me-2 text-secondary"></i>Дата отправки:</h6>
+                        <p>{{ test.submitted_at.split(' ')[0] if test.submitted_at else '—' }}</p>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6><i class="fas fa-link me-2 text-success"></i>Ссылка на тест:</h6>
+                        <p>
+                            <a href="{{ test.test_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-external-link-alt me-1"></i>
+                                Открыть тест
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <!-- Форма оценки -->
+                <form method="POST" action="{{ url_for('submit_evaluation') }}">
+                    <input type="hidden" name="test_id" value="{{ test.id }}">
+                    
+                    <div class="mb-4">
+                        <h5><i class="fas fa-star me-2 text-warning"></i>Выберите оценку:</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="score" id="score_0" value="0">
+                                    <label class="form-check-label" for="score_0">
+                                        <span class="badge bg-danger fs-6">0 баллов</span> - Не засчитать
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="score" id="score_max" value="{{ test.test_type }}" checked>
+                                    <label class="form-check-label" for="score_max">
+                                        <span class="badge bg-success fs-6">{{ test.test_type }} баллов</span> - Засчитать
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="comment" class="form-label">
+                            <i class="fas fa-comment me-2"></i>Комментарий (необязательно)
+                        </label>
+                        <textarea class="form-control" id="comment" name="comment" rows="3" 
+                                  placeholder="Введите комментарий к оценке..."></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <button type="submit" class="btn btn-success btn-lg me-md-2">
+                            <i class="fas fa-check me-2"></i>
+                            Сохранить оценку
+                        </button>
+                        <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-times me-2"></i>
+                            Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Инструкция -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Инструкция по оценке
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-check-circle me-2 text-success"></i>Засчитать:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Тест выполнен правильно</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Все задания решены</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Ссылка работает</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-times-circle me-2 text-danger"></i>Не засчитать:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-times text-danger me-2"></i>Тест не выполнен</li>
+                            <li><i class="fas fa-times text-danger me-2"></i>Неправильные ответы</li>
+                            <li><i class="fas fa-times text-danger me-2"></i>Неверная ссылка</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
