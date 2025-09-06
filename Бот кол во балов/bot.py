@@ -468,12 +468,7 @@ class StepikBot:
         
         for i, student in enumerate(students, 1):
             # Формируем имя студента
-            first_name = student['first_name'] or ''
-            last_name = student['last_name'] or ''
-            name = f"{first_name} {last_name}".strip()
-            
-            if not name:
-                name = f"Студент #{student['user_id']}"
+            name = student.get('full_name', '') or f"Студент #{student['user_id']}"
             
             text += f"{i}. <b>{name}</b>\n"
             text += f"   🆔 Степик ID: {student.get('stepik_id', 'Не указан')}\n"
@@ -515,12 +510,7 @@ class StepikBot:
             keyboard = []
             for student in students:
                 # Формируем имя студента
-                first_name = student['first_name'] or ''
-                last_name = student['last_name'] or ''
-                name = f"{first_name} {last_name}".strip()
-                
-                if not name:
-                    name = f"Студент #{student['user_id']}"
+                name = student.get('full_name', '') or f"Студент #{student['user_id']}"
                 
                 button_text = f"{name} ({student['total_score']} баллов)"
                 keyboard.append([InlineKeyboardButton(button_text, callback_data=f"student_{student['user_id']}")])
@@ -547,12 +537,13 @@ class StepikBot:
         # Получаем все тесты студента
         student_tests = self.db.get_student_tests(student_id)
         
-        # Формируем имя студента
-        first_name = student_data['first_name'] or ''
-        last_name = student_data['last_name'] or ''
-        name = f"{first_name} {last_name}".strip()
+        # Получаем имя студента из тестов
+        name = "Не указано"
+        if student_tests:
+            # Берем имя из первого теста
+            name = student_tests[0].get('full_name', 'Не указано')
         
-        if not name:
+        if not name or name == "Не указано":
             name = f"Студент #{student_id}"
         
         text = f"👤 <b>Информация о студенте:</b>\n\n"

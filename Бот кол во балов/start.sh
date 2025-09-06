@@ -21,3 +21,4 @@ echo "🚀 Запуск бота..."
 python run.py
 
 
+

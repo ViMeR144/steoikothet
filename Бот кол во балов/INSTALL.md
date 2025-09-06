@@ -98,3 +98,4 @@ pip install -r requirements.txt --force-reinstall
 Ваш бот готов к работе! Он покрывает все критерии оценивания и набирает 40/40 баллов.
 
 
+

@@ -20,6 +20,7 @@ class Database:
                 username TEXT,
                 first_name TEXT,
                 last_name TEXT,
+                stepik_id TEXT,
                 role TEXT CHECK(role IN ('teacher', 'student')),
                 is_approved BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -224,15 +225,15 @@ class Database:
             
             # Общее количество студентов
             cursor.execute('SELECT COUNT(*) FROM users WHERE role = "student" AND is_approved = TRUE')
-            total_students = cursor.fetchone()[0]
+            total_students = cursor.fetchone()[0] or 0
             
             # Общее количество тестов
             cursor.execute('SELECT COUNT(*) FROM tests')
-            total_tests = cursor.fetchone()[0]
+            total_tests = cursor.fetchone()[0] or 0
             
             # Оцененные тесты
             cursor.execute('SELECT COUNT(*) FROM tests WHERE is_reviewed = TRUE')
-            reviewed_tests = cursor.fetchone()[0]
+            reviewed_tests = cursor.fetchone()[0] or 0
             
             # Средний балл
             cursor.execute('SELECT AVG(score) FROM tests WHERE is_reviewed = TRUE')
@@ -249,7 +250,13 @@ class Database:
             }
         except Exception as e:
             logging.error(f"Ошибка получения статистики: {e}")
-            return {}
+            return {
+                'total_students': 0,
+                'total_tests': 0,
+                'reviewed_tests': 0,
+                'pending_tests': 0,
+                'average_score': 0
+            }
     
     def get_students_scores(self) -> List[Dict]:
         """Получение баллов всех студентов"""
@@ -258,14 +265,15 @@ class Database:
             cursor = conn.cursor()
             
             cursor.execute('''
-                SELECT u.user_id, u.first_name, u.last_name, u.stepik_id,
+                SELECT u.user_id, 
+                       COALESCE(MAX(t.full_name), 'Не указано') as full_name,
                        COALESCE(SUM(t.score), 0) as total_score,
                        COUNT(t.id) as total_tests,
                        COUNT(CASE WHEN t.is_reviewed = TRUE THEN 1 END) as reviewed_tests
                 FROM users u
                 LEFT JOIN tests t ON u.user_id = t.student_id
                 WHERE u.role = "student" AND u.is_approved = TRUE
-                GROUP BY u.user_id, u.first_name, u.last_name, u.stepik_id
+                GROUP BY u.user_id
                 ORDER BY total_score DESC
             ''')
             
@@ -274,12 +282,11 @@ class Database:
             
             return [{
                 'user_id': student[0],
-                'first_name': student[1] or '',
-                'last_name': student[2] or '',
-                'stepik_id': student[3] or '',
-                'total_score': student[4],
-                'total_tests': student[5],
-                'reviewed_tests': student[6]
+                'full_name': student[1] or 'Не указано',
+                'stepik_id': '',  # Будет заполнено из тестов
+                'total_score': student[2],
+                'total_tests': student[3],
+                'reviewed_tests': student[4]
             } for student in students]
         except Exception as e:
             logging.error(f"Ошибка получения баллов студентов: {e}")

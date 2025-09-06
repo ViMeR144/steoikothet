@@ -5,9 +5,10 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 from database import Database
 import json
 from datetime import datetime
+import os
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here'
+app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
 # Инициализация базы данных
 db = Database()
@@ -31,15 +32,16 @@ def students():
         cursor = conn.cursor()
         
         cursor.execute('''
-            SELECT u.user_id, u.first_name, u.last_name, u.stepik_id,
+            SELECT u.user_id, 
+                   COALESCE(MAX(t.full_name), 'Не указано') as full_name,
                    COUNT(t.id) as total_tests,
                    COUNT(CASE WHEN t.is_reviewed = TRUE THEN 1 END) as reviewed_tests,
                    COALESCE(SUM(t.score), 0) as total_score
             FROM users u
             LEFT JOIN tests t ON u.user_id = t.student_id
             WHERE u.role = "student" AND u.is_approved = TRUE
-            GROUP BY u.user_id, u.first_name, u.last_name, u.stepik_id
-            ORDER BY u.last_name, u.first_name
+            GROUP BY u.user_id
+            ORDER BY COALESCE(MAX(t.full_name), 'Не указано')
         ''')
         
         students = cursor.fetchall()
@@ -47,12 +49,11 @@ def students():
         for student in students:
             student_data = {
                 'user_id': student[0],
-                'first_name': student[1] or '',
-                'last_name': student[2] or '',
-                'stepik_id': student[3] or '',
-                'total_tests': student[4],
-                'reviewed_tests': student[5],
-                'total_score': student[6],
+                'full_name': student[1] or 'Не указано',
+                'stepik_id': '',  # Будет заполнено из тестов
+                'total_tests': student[2],
+                'reviewed_tests': student[3],
+                'total_score': student[4],
                 'tests': []
             }
             
@@ -79,6 +80,10 @@ def students():
                     'teacher_comment': test[8]
                 }
                 student_data['tests'].append(test_data)
+                
+                # Берем stepik_id из первого теста
+                if not student_data['stepik_id'] and test[2]:
+                    student_data['stepik_id'] = test[2]
             
             students_data.append(student_data)
         
@@ -149,4 +154,5 @@ def student_detail(student_id):
         return f"Ошибка: {e}", 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=False, host='0.0.0.0', port=port)

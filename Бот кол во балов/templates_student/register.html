@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация - Stepik Bot{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-6">
+        <div class="card">
+            <div class="card-header text-center">
+                <h1 class="mb-0">
+                    <i class="fas fa-user-plus me-3"></i>
+                    Регистрация
+                </h1>
+            </div>
+            <div class="card-body p-5">
+                <!-- Выбор роли -->
+                <div class="text-center mb-4">
+                    <h4>Выберите свою роль:</h4>
+                    <div class="btn-group" role="group" aria-label="Выбор роли">
+                        <input type="radio" class="btn-check" name="role" id="student" value="student" checked>
+                        <label class="btn btn-outline-primary" for="student">
+                            <i class="fas fa-user-graduate me-2"></i>Студент
+                        </label>
+
+                        <input type="radio" class="btn-check" name="role" id="teacher" value="teacher">
+                        <label class="btn btn-outline-primary" for="teacher">
+                            <i class="fas fa-chalkboard-teacher me-2"></i>Преподаватель
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Форма регистрации студента -->
+                <div id="student-form">
+                    <form method="POST" action="{{ url_for('register_student') }}">
+                        <div class="mb-3">
+                            <label for="student_full_name" class="form-label">
+                                <i class="fas fa-user me-2"></i>ФИО
+                            </label>
+                            <input type="text" class="form-control" id="student_full_name" name="full_name" 
+                                   placeholder="Введите ваше полное ФИО" required>
+                            <div class="form-text">Например: Иванов Иван Иванович</div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>
+                                Зарегистрироваться как студент
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Форма регистрации преподавателя -->
+                <div id="teacher-form" style="display: none;">
+                    <form method="POST" action="{{ url_for('register_teacher') }}">
+                        <div class="mb-3">
+                            <label for="teacher_full_name" class="form-label">
+                                <i class="fas fa-user me-2"></i>ФИО
+                            </label>
+                            <input type="text" class="form-control" id="teacher_full_name" name="full_name" 
+                                   placeholder="Введите ваше полное ФИО" required>
+                            <div class="form-text">Например: Петрова Анна Сергеевна</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="teacher_password" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Пароль преподавателя
+                            </label>
+                            <input type="password" class="form-control" id="teacher_password" name="password" 
+                                   placeholder="Введите пароль для регистрации преподавателя" required>
+                            <div class="form-text">Обратитесь к администратору за паролем</div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-tie me-2"></i>
+                                Зарегистрироваться как преподаватель
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Вернуться на главную
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Информация -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Информация о регистрации
+                </h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user-graduate me-2 text-primary"></i>Для студентов:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Быстрая регистрация</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Отправка тестов</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Просмотр результатов</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-chalkboard-teacher me-2 text-info"></i>Для преподавателей:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Требуется пароль</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Оценка тестов</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Статистика класса</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const studentForm = document.getElementById('student-form');
+    const teacherForm = document.getElementById('teacher-form');
+    const roleInputs = document.querySelectorAll('input[name="role"]');
+    
+    function toggleForms() {
+        const selectedRole = document.querySelector('input[name="role"]:checked').value;
+        
+        if (selectedRole === 'student') {
+            studentForm.style.display = 'block';
+            teacherForm.style.display = 'none';
+        } else {
+            studentForm.style.display = 'none';
+            teacherForm.style.display = 'block';
+        }
+    }
+    
+    roleInputs.forEach(input => {
+        input.addEventListener('change', toggleForms);
+    });
+    
+    // Инициализация
+    toggleForms();
+});
+</script>
+{% endblock %}

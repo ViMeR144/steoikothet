@@ -62,7 +62,7 @@
                             <tr>
                                 <td>{{ loop.index }}</td>
                                 <td>
-                                    <strong>{{ student.first_name }} {{ student.last_name }}</strong>
+                                    <strong>{{ student.full_name }}</strong>
                                 </td>
                                 <td>
                                     <code>{{ student.stepik_id }}</code>
@@ -104,3 +104,4 @@
     </div>
 </div>
 {% endblock %}
+
